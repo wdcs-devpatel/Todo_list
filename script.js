@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', loadTasks);
-const STORAGE_KEY = 'todoListTasks';
 let taskToEdit = null;
 
 const input = document.getElementById('taskInput');
