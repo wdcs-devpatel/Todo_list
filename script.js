@@ -1,58 +1,47 @@
-document.addEventListener('DOMContentLoaded', loadTasks);
+const KEY = 'todo_tasks';
 let taskToEdit = null;
+let input, action, taskList, progressText, progressBar, chart;
 
-const input = document.getElementById('taskInput');
-const action = document.getElementById('Action');
-const taskList = document.getElementById('taskList');
-const progressText = document.getElementById('progressText');
-const progressBar = document.getElementById('progressBar');
+document.addEventListener('DOMContentLoaded', init);
 
-action.addEventListener('click', handleTaskAction);
-document.getElementById('taskForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    handleTaskAction();
-});
+function init() {
+    input = document.getElementById('taskInput');
+    action = document.getElementById('Action');
+    taskList = document.getElementById('taskList');
+    progressText = document.getElementById('progressText');
+    progressBar = document.getElementById('progressBar');
 
-function saveTasks() {
-    const tasks = [];
-    taskList.querySelectorAll('li').forEach(Item => {
-        tasks.push({
-            text: Item.querySelector('.task-text').textContent,
-            completed: Item.classList.contains('completed')
-        });
-    });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    updateProgress();
+    action.addEventListener('click', handleAction);
+
+    setupChart();
+    loadTasks();
 }
-function handleTaskAction() {
-    const taskText = input.value.trim();
 
+function handleAction() {
+    const taskText = input.value.trim();
     if (taskText === '') {
         alert("Task cannot be empty!");
         return;
     }
 
     if (taskToEdit) {
-        
         taskToEdit.taskSpan.textContent = taskText;
         taskToEdit.Item.classList.remove('editing');
-        
         taskToEdit = null;
         action.textContent = 'Add Task';
-        
     } else {
-        const newTask = createTaskElement({ text: taskText, completed: false });
+        const newTask = createTaskElement({ text: taskText, complete: false });
         taskList.appendChild(newTask);
     }
-    
+
     input.value = '';
-    saveTasks();
+    saveTasks();    
 }
 
 function createTaskElement({ text, completed }) {
     const Item = document.createElement('li');
     if (completed) Item.classList.add('completed');
-    
+
     const taskSpan = document.createElement('span');
     taskSpan.className = 'task-text';
     taskSpan.textContent = text;
@@ -68,13 +57,12 @@ function createTaskElement({ text, completed }) {
     editBtn.textContent = 'Edit';
     editBtn.className = 'edit-btn';
     editBtn.onclick = () => {
-        if   (taskToEdit && taskToEdit.Item) {
+        if (taskToEdit && taskToEdit.Item) {
             taskToEdit.Item.classList.remove('editing');
         }
         taskToEdit = { Item, taskSpan };
         Item.classList.add('editing');
         input.value = taskSpan.textContent;
-        input.focus();
         action.textContent = 'Save Edit';
     };
 
@@ -90,12 +78,23 @@ function createTaskElement({ text, completed }) {
 
     actionsDiv.append(editBtn, deleteBtn);
     Item.append(taskSpan, actionsDiv);
-
     return Item;
 }
 
+function saveTasks() {
+    const tasks = [];
+    taskList.querySelectorAll('li').forEach(Item => {
+        tasks.push({
+            text: Item.querySelector('.task-text').textContent,
+            completed: Item.classList.contains('completed')
+        });
+    });
+    localStorage.setItem(KEY, JSON.stringify(tasks));
+    updateProgress();
+}
+
 function loadTasks() {
-    const storedTasks = localStorage.getItem(STORAGE_KEY);
+    const storedTasks = localStorage.getItem(KEY);
     if (storedTasks) {
         JSON.parse(storedTasks).forEach(task => {
             taskList.appendChild(createTaskElement(task));
@@ -105,13 +104,49 @@ function loadTasks() {
 }
 
 function updateProgress() {
-    const allTasks = taskList.querySelectorAll('li').length;
-    const completedTasks = taskList.querySelectorAll('li.completed').length;
-  
+    const total = taskList.querySelectorAll('li').length;
+    const completed = taskList.querySelectorAll('li.completed').length;
+
     let percentage = 0;
-    if (allTasks > 0) {
-        percentage = Math.round((completedTasks / allTasks) * 100);
+    if (total > 0) {
+        percentage = Math.round((completed / total) * 100);
     }
-    progressBar.style.width = percentage + '%';
-    progressText.textContent = `${completedTasks} out of ${allTasks} (${percentage}%) Completed`;
+
+    if (progressBar) {
+        progressBar.style.width = percentage + '%';
+    }
+
+    if (progressText) {
+        progressText.textContent = `${completed} out of ${total} (${percentage}%) Completed`;
+    }
+
+    if (chart) {
+        updateChart(completed, total - completed);
+    }
 }
+
+function setupChart() {
+    const ctx = document.getElementById('taskChart').getContext('2d');
+    chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Completed', 'Pending'],
+            datasets: [{
+                data: [0, 1],
+                backgroundColor: ['#f5140cff', '#0f0f0fff']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                title: { display: true, text: 'Task Completion Status' }
+            }
+        }
+    });
+}
+
+function updateChart(completed, pending) {
+    chart.data.datasets[0].data = [completed, pending];
+    chart.update();
+    }
