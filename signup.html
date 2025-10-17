@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Create Account</h1>
+    <div class="input-area">
+      <input type="text" id="username" placeholder="Enter username">
+    </div>
+    <div class="input-area">
+      <input type="password" id="password" placeholder="Enter password">
+    </div>
+    <div class="input-area">
+      <input type="password" id="confirmPassword" placeholder="Confirm password">
+    </div>
+    <button id="signupBtn">Sign Up</button>
+    <p>Already have an account? <a href="index.html">Login here</a></p>
+    <p id="message" class="message-area"></p>
+  </div>
+
+  <script>
+    document.getElementById('signupBtn').addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const message = document.getElementById('message');
+        
+      if (!username || !password || !confirmPassword) {
+        message.textContent = "All fields are required!"; 
+        return;
+      }
+      if (password !== confirmPassword) {
+        message.textContent = "Passwords do not match!";  
+        return;
+      }
+      const users = JSON.parse(localStorage.getItem('users'));
+      if (users[username]) {
+        message.textContent = "Username already exists!";
+        return;
+      }
+      users[username] = { password, tasks: [] };
+      localStorage.setItem('users', JSON.stringify(users));
+
+      message.style.color = 'green';
+      message.textContent = "Signup successful! Redirecting...";
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 500);
+    });     
+  </script>
+</body>
+</html>

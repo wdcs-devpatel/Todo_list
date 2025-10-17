@@ -1,152 +1,161 @@
-const KEY = 'todo_tasks';
-let taskToEdit = null;
-let input, action, taskList, progressText, progressBar, chart;
-
+const USERS_KEY = 'users';
+let currentUser = localStorage.getItem('currentUser');
+let input, action, taskList, progressText, progressBar, chart, taskToEdit = null;
 document.addEventListener('DOMContentLoaded', init);
 
 function init() {
-    input = document.getElementById('taskInput');
-    action = document.getElementById('Action');
-    taskList = document.getElementById('taskList');
-    progressText = document.getElementById('progressText');
-    progressBar = document.getElementById('progressBar');
+  if (!currentUser) {
+    window.location.href = 'index.html';
+    return;
+  } 
+  input = document.getElementById('taskInput');
+  action = document.getElementById('Action');
+  taskList = document.getElementById('taskList');
+  progressText = document.getElementById('progressText');
+  progressBar = document.getElementById('progressBar');
 
-    action.addEventListener('click', handleAction);
+  action.addEventListener('click', handleAction);
+  document.getElementById('logoutBtn').addEventListener('click', logout);
 
-    setupChart();
-    loadTasks();
+  setupChart();
+  loadTasks();
+  updateProgress();
 }
+                             
 
+function logout() {
+  localStorage.removeItem('currentUser');
+  window.location.href = 'index.html';
+}
 function handleAction() {
-    const taskText = input.value.trim();
-    if (taskText === '') {
-        alert("Task cannot be empty!");
-        return;
-    }
+  const taskText = input.value.trim();
+  if (taskText === '') {
+    ("Task cannot be empty!");
+    return;
+  }
 
-    if (taskToEdit) {
-        taskToEdit.taskSpan.textContent = taskText;
-        taskToEdit.Item.classList.remove('editing');
-        taskToEdit = null;
-        action.textContent = 'Add Task';
-    } else {
-        const newTask = createTaskElement({ text: taskText, complete: false });
-        taskList.appendChild(newTask);
-    }
-
-    input.value = '';
-    saveTasks();    
+  if (taskToEdit) {
+    taskToEdit.taskSpan.textContent = taskText;
+    taskToEdit.Item.classList.remove('editing');
+    taskToEdit = null;
+    action.textContent = 'Add Task';
+  } else {
+    const newTask = createTaskElement({ text: taskText, completed: false });
+    taskList.appendChild(newTask);
+  }
+  input.value = '';
+  saveTasks();
 }
 
 function createTaskElement({ text, completed }) {
-    const Item = document.createElement('li');
-    if (completed) Item.classList.add('completed');
+  const Item = document.createElement('li');
+  if (completed) Item.classList.add('`completed`');
 
-    const taskSpan = document.createElement('span');
-    taskSpan.className = 'task-text';
-    taskSpan.textContent = text;
-    taskSpan.onclick = () => {
-        Item.classList.toggle('completed');
-        saveTasks();
-    };
+  const taskSpan = document.createElement('span');
+  taskSpan.className = 'task-text';
+  taskSpan.textContent = text;
+  taskSpan.onclick = () => {
+    Item.classList.toggle('completed');
+    saveTasks();
+  };
 
-    const actionsDiv = document.createElement('div');
-    actionsDiv.className = 'actions';
+  const div = document.createElement('div');
+  div.className = 'actions';
 
-    const editBtn = document.createElement('button');
-    editBtn.textContent = 'Edit';
-    editBtn.className = 'edit-btn';
-    editBtn.onclick = () => {
-        if (taskToEdit && taskToEdit.Item) {
-            taskToEdit.Item.classList.remove('editing');
+  const editBtn = document.createElement('button');
+  editBtn.textContent = 'Edit';
+  editBtn.className = 'edit-btn';
+  editBtn.onclick = () => {
+    if (taskToEdit && taskToEdit.Item) {taskToEdit.Item.classList.remove('editing');
         }
-        taskToEdit = { Item, taskSpan };
-        Item.classList.add('editing');
-        input.value = taskSpan.textContent;
-        action.textContent = 'Save Edit';
-    };
+            taskToEdit = { Item, taskSpan };
+    Item.classList.add('editing');
+    input.value = taskSpan.textContent;
+    action.textContent = 'Save Edit';
+  };
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.onclick = () => {
-        if (confirm('Are you sure you want to delete this task?')) {
-            Item.remove();
-            saveTasks();
-        }
-    };
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.className = 'delete-btn';
+  deleteBtn.onclick = () => {
+    if (confirm('Delete this task?')) {
+      Item.remove();
+      saveTasks();
+    }
+  };
 
-    actionsDiv.append(editBtn, deleteBtn);
-    Item.append(taskSpan, actionsDiv);
-    return Item;
+  div.append(editBtn, deleteBtn);
+  Item.append(taskSpan, div);
+  return Item;
 }
 
 function saveTasks() {
-    const tasks = [];
-    taskList.querySelectorAll('li').forEach(Item => {
-        tasks.push({
-            text: Item.querySelector('.task-text').textContent,
-            completed: Item.classList.contains('completed')
-        });
+  const users = JSON.parse(localStorage.getItem(USERS_KEY)) || {};
+  const userData = users[currentUser] || { password: '', tasks: [] };
+
+  const tasks = [];
+  taskList.querySelectorAll('li').forEach(Item => {
+    tasks.push({
+      text: Item.querySelector('.task-text').textContent,
+      completed: Item.classList.contains('completed')
     });
-    localStorage.setItem(KEY, JSON.stringify(tasks));
-    updateProgress();
+  });
+
+  userData.tasks = tasks;
+  users[currentUser] = userData;
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+  updateProgress();
 }
 
 function loadTasks() {
-    const storedTasks = localStorage.getItem(KEY);
-    if (storedTasks) {
-        JSON.parse(storedTasks).forEach(task => {
-            taskList.appendChild(createTaskElement(task));
-        });
-    }
-    updateProgress();
+  const users = JSON.parse(localStorage.getItem(USERS_KEY)) || {};
+  const userData = users[currentUser];
+  if (userData && userData.tasks) {
+    userData.tasks.forEach(task => {
+      taskList.appendChild(createTaskElement(task));
+    });
+  }
 }
 
 function updateProgress() {
-    const total = taskList.querySelectorAll('li').length;
-    const completed = taskList.querySelectorAll('li.completed').length;
+  const total = taskList.querySelectorAll('li').length;
+  const completed = taskList.querySelectorAll('li.completed').length;
 
-    let percentage = 0;
-    if (total > 0) {
-        percentage = Math.round((completed / total) * 100);
-    }
+  let percentage = total ? Math.round((completed / total) * 100) : 0;
+  progressBar.style.width = percentage + '%';
+  progressText.textContent = `${completed} out of ${total} (${percentage}%) Completed`;
 
-    if (progressBar) {
-        progressBar.style.width = percentage + '%';
-    }
-
-    if (progressText) {
-        progressText.textContent = `${completed} out of ${total} (${percentage}%) Completed`;
-    }
-
-    if (chart) {
-        updateChart(completed, total - completed);
-    }
+  updateChart(completed, total - completed);
 }
 
 function setupChart() {
-    const ctx = document.getElementById('taskChart').getContext('2d');
-    chart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Completed', 'Pending'],
-            datasets: [{
-                data: [0, 1],
-                backgroundColor: ['#f5140cff', '#0f0f0fff']
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'bottom' },
-                title: { display: true, text: 'Task Completion Status' }
-            }
-        }
-    });
+  const ctx = document.getElementById('taskChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Completed', 'Pending'],
+      datasets: [{
+        data: [0, 1],
+        backgroundColor: ['#28a745', '#ffc107']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        title: { display: true, text: 'Task Completion Status' }
+      }
+    }
+  });
 }
 
 function updateChart(completed, pending) {
-    chart.data.datasets[0].data = [completed, pending];
-    chart.update();
-    }
+  chart.data.datasets[0].data = [completed, pending];
+  chart.update();
+}
+
+function importance(){
+
+}
+

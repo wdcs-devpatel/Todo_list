@@ -1,32 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Persistent To-Do List</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <div class="container">
-        <h1>My To-Do List 📝</h1>
-
-        <div class="input-area">
-            <input type="text" id="taskInput" placeholder="Add a new task...">
-            <button id="Action">Add Task</button>
-        </div>
-
-        <div class="progress-bar">
-            <p>Progress: <span id="progressText">0% Completed</span></p>
-            <div class="bar-container">
-                <div id="progressBar" class="bar"></div>
-            </div>
-        </div>
-        <ul id="taskList"></ul>
-        <div id="chartContainer">
-            <canvas id="taskChart"></canvas>
-        </div>
+  <div class="container">
+    <h1>Login</h1>
+    <div class="input-area">
+      <input type="text" id="username" placeholder="Enter username">
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
+    <div class="input-area">    
+      <input type="password" id="password" placeholder="Enter password">
+    </div>
+    <button id="loginBtn">Login</button>
+    <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+    <p id="message" class="message-area"></p>
+  </div>
+  <script>
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const message = document.getElementById('message');
+
+      const users = JSON.parse(localStorage.getItem('users'));
+      if (!users[username] || users[username].password !== password) {
+        message.textContent = "Invalid username or password!";
+        return;
+      }
+      localStorage.setItem('currentUser', username);
+      window.location.href = 'todo.html';
+    });
+  </script>
 </body>
 </html>
