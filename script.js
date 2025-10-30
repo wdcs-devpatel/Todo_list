@@ -21,7 +21,6 @@ function init() {
   loadTasks();
   updateProgress();
 }
-                             
 
 function logout() {
   localStorage.removeItem('currentUser');
@@ -154,8 +153,3 @@ function updateChart(completed, pending) {
   chart.data.datasets[0].data = [completed, pending];
   chart.update();
 }
-
-function importance(){
-
-}
-

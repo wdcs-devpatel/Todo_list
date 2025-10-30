@@ -21,26 +21,25 @@
     <button id="signupBtn">Sign Up</button>
     <p>Already have an account? <a href="index.html">Login here</a></p>
     <p id="message" class="message-area"></p>
-  </div>
-
+  </div>  
   <script>
-    document.getElementById('signupBtn').addEventListener('click', () => {
+      document.getElementById('signupBtn').addEventListener('click', () => {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
       const message = document.getElementById('message');
-        
-      if (!username || !password || !confirmPassword) {
-        message.textContent = "All fields are required!"; 
+
+      if (!username ||!password ||!confirmPassword) {
+        message.textContent = "All fields are required "; 
         return;
       }
       if (password !== confirmPassword) {
-        message.textContent = "Passwords do not match!";  
+        message.textContent = "Passwords does not match";  
         return;
       }
       const users = JSON.parse(localStorage.getItem('users'));
       if (users[username]) {
-        message.textContent = "Username already exists!";
+        message.textContent = "Username already exists";
         return;
       }
       users[username] = { password, tasks: [] };
@@ -55,3 +54,4 @@
   </script>
 </body>
 </html>
+
