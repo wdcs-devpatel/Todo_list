@@ -9,16 +9,13 @@ function init() {
     window.location.href = 'index.html';
     return;
   }
-
   input = document.getElementById('taskInput');
   action = document.getElementById('Action');
   taskList = document.getElementById('taskList');
   progressText = document.getElementById('progressText');
   progressBar = document.getElementById('progressBar');
-
   action.addEventListener('click', handleAction);
   document.getElementById('logoutBtn').addEventListener('click', logout);
-
   setupChart();
   loadTasks();
   updateProgress();
@@ -31,6 +28,10 @@ function logout() {
 
 function handleAction() {
   const taskText = input.value.trim();
+
+if(taskText.length>30){
+  alert('should not be greater than 30 character');
+}
   if (taskText === '') {
     alert("Task cannot be empty!");
     return;
@@ -45,34 +46,37 @@ function handleAction() {
     const newTask = createTaskElement({ text: taskText, completed: false });
     taskList.appendChild(newTask);
   }
-
   input.value = '';
   saveTasks();
 }
-
 function createTaskElement({ text, completed }) {
   const template = document.getElementById('taskTemplate');
   const Item = template.content.cloneNode(true).querySelector('li');
-
   const taskSpan = Item.querySelector('.task-text');
   const editBtn = Item.querySelector('.edit-btn');
   const deleteBtn = Item.querySelector('.delete-btn');
-
   taskSpan.textContent = text;
-  if (completed) Item.classList.add('completed');
-  editBtn.disabled = completed;
 
+  if (completed) {
+    Item.classList.add('completed');
+    editBtn.style.display = 'none'; 
+  }
+
+  
   taskSpan.onclick = () => {
     Item.classList.toggle('completed');
-    editBtn.disabled = Item.classList.contains('completed');
+
+    if (Item.classList.contains('completed')) {
+      editBtn.style.display = 'none';
+    } else {
+      editBtn.style.display = 'inline-block';
+    }
+
     saveTasks();
   };
 
   editBtn.onclick = () => {
-    if (Item.classList.contains('completed')) {
-      alert("You cannot edit a completed task!");
-      return;
-    }
+  
     if (taskToEdit) taskToEdit.classList.remove('editing');
     taskToEdit = Item;
     Item.classList.add('editing');
@@ -111,13 +115,12 @@ function saveTasks() {
 function loadTasks() {
   const users = JSON.parse(localStorage.getItem(USERS_KEY)) || {};
   const userData = users[currentUser];
-  if (userData && userData.tasks) {66
+  if (userData && userData.tasks) {
     userData.tasks.forEach(task => {
       taskList.appendChild(createTaskElement(task));
     });
   }
 }
-
 function updateProgress() {
   const total = taskList.querySelectorAll('li').length;
   const completed = taskList.querySelectorAll('li.completed').length;
@@ -128,6 +131,7 @@ function updateProgress() {
 
   updateChart(completed, total - completed);
 }
+
 
 function setupChart() {
   const ctx = document.getElementById('taskChart').getContext('2d');
@@ -149,7 +153,6 @@ function setupChart() {
     }
   });
 }
-
 function updateChart(completed, pending) {
   chart.data.datasets[0].data = [completed, pending];
   chart.update();
