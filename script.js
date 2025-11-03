@@ -37,8 +37,8 @@ function handleAction() {
   }
 
   if (taskToEdit) {
-    taskToEdit.taskSpan.textContent = taskText;
-    taskToEdit.Item.classList.remove('editing');
+    taskToEdit.querySelector('.task-text').textContent = taskText;
+    taskToEdit.classList.remove('editing');
     taskToEdit = null;
     action.textContent = 'Add Task';
   } else {
@@ -51,23 +51,16 @@ function handleAction() {
 }
 
 function createTaskElement({ text, completed }) {
-  const Item = document.createElement('li');
-  if (completed) Item.classList.add('completed');
+  const template = document.getElementById('taskTemplate');
+  const Item = template.content.cloneNode(true).querySelector('li');
 
-  const taskSpan = document.createElement('span');
-  taskSpan.className = 'task-text';
+  const taskSpan = Item.querySelector('.task-text');
+  const editBtn = Item.querySelector('.edit-btn');
+  const deleteBtn = Item.querySelector('.delete-btn');
+
   taskSpan.textContent = text;
-
-  const div = document.createElement('div');
-  div.className = 'actions';
-
-  const editBtn = document.createElement('button');
-  editBtn.textContent = 'Edit';
-  editBtn.className = 'edit-btn';
-
-  const deleteBtn = document.createElement('button');
-  deleteBtn.textContent = 'Delete';
-  deleteBtn.className = 'delete-btn';
+  if (completed) Item.classList.add('completed');
+  editBtn.disabled = completed;
 
   taskSpan.onclick = () => {
     Item.classList.toggle('completed');
@@ -80,12 +73,8 @@ function createTaskElement({ text, completed }) {
       alert("You cannot edit a completed task!");
       return;
     }
-
-    if (taskToEdit && taskToEdit.Item) {
-      taskToEdit.Item.classList.remove('editing');
-    }
-
-    taskToEdit = { Item, taskSpan };
+    if (taskToEdit) taskToEdit.classList.remove('editing');
+    taskToEdit = Item;
     Item.classList.add('editing');
     input.value = taskSpan.textContent;
     action.textContent = 'Save Edit';
@@ -98,19 +87,14 @@ function createTaskElement({ text, completed }) {
     }
   };
 
-  div.append(editBtn, deleteBtn);
-  Item.append(taskSpan, div);
-
-  editBtn.disabled = completed;
-
   return Item;
 }
 
 function saveTasks() {
   const users = JSON.parse(localStorage.getItem(USERS_KEY)) || {};
   const userData = users[currentUser] || { password: '', tasks: [] };
-
   const tasks = [];
+
   taskList.querySelectorAll('li').forEach(Item => {
     tasks.push({
       text: Item.querySelector('.task-text').textContent,
@@ -121,14 +105,13 @@ function saveTasks() {
   userData.tasks = tasks;
   users[currentUser] = userData;
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
-
   updateProgress();
 }
 
 function loadTasks() {
   const users = JSON.parse(localStorage.getItem(USERS_KEY)) || {};
   const userData = users[currentUser];
-  if (userData && userData.tasks) {
+  if (userData && userData.tasks) {66
     userData.tasks.forEach(task => {
       taskList.appendChild(createTaskElement(task));
     });

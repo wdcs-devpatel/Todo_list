@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -40,7 +40,7 @@
       const users = JSON.parse(localStorage.getItem('users'));
       if (users[username]) {
         message.textContent = "Username already exists";
-        return;
+        return; 
       }
       users[username] = { password, tasks: [] };
       localStorage.setItem('users', JSON.stringify(users));
