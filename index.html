@@ -6,7 +6,6 @@
   <title>Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
   <div class="container">
     <h1>Login</h1>
@@ -19,13 +18,12 @@
     <button id="loginBtn">Login</button>
     <p>Don't have an account? <a href="signup.html">Sign up</a></p>
     <p id="message" class="message-area"></p>
-  </div>
+  </div>  
   <script>
-    document.getElementById('loginBtn').addEventListener('click', () => {
+      document.getElementById('loginBtn').addEventListener('click', () => {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
       const message = document.getElementById('message');
-
       const users = JSON.parse(localStorage.getItem('users'));
       if (!users[username] || users[username].password !== password) {
         message.textContent = "Invalid username or password!";

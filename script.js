@@ -1,13 +1,15 @@
 const USERS_KEY = 'users';
 let currentUser = localStorage.getItem('currentUser');
 let input, action, taskList, progressText, progressBar, chart, taskToEdit = null;
+
 document.addEventListener('DOMContentLoaded', init);
 
 function init() {
   if (!currentUser) {
     window.location.href = 'index.html';
     return;
-  } 
+  }
+
   input = document.getElementById('taskInput');
   action = document.getElementById('Action');
   taskList = document.getElementById('taskList');
@@ -26,10 +28,11 @@ function logout() {
   localStorage.removeItem('currentUser');
   window.location.href = 'index.html';
 }
+
 function handleAction() {
   const taskText = input.value.trim();
   if (taskText === '') {
-    ("Task cannot be empty!");
+    alert("Task cannot be empty!");
     return;
   }
 
@@ -42,21 +45,18 @@ function handleAction() {
     const newTask = createTaskElement({ text: taskText, completed: false });
     taskList.appendChild(newTask);
   }
+
   input.value = '';
   saveTasks();
 }
 
 function createTaskElement({ text, completed }) {
   const Item = document.createElement('li');
-  if (completed) Item.classList.add('`completed`');
+  if (completed) Item.classList.add('completed');
 
   const taskSpan = document.createElement('span');
   taskSpan.className = 'task-text';
   taskSpan.textContent = text;
-  taskSpan.onclick = () => {
-    Item.classList.toggle('completed');
-    saveTasks();
-  };
 
   const div = document.createElement('div');
   div.className = 'actions';
@@ -64,18 +64,33 @@ function createTaskElement({ text, completed }) {
   const editBtn = document.createElement('button');
   editBtn.textContent = 'Edit';
   editBtn.className = 'edit-btn';
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.className = 'delete-btn';
+
+  taskSpan.onclick = () => {
+    Item.classList.toggle('completed');
+    editBtn.disabled = Item.classList.contains('completed');
+    saveTasks();
+  };
+
   editBtn.onclick = () => {
-    if (taskToEdit && taskToEdit.Item) {taskToEdit.Item.classList.remove('editing');
-        }
-            taskToEdit = { Item, taskSpan };
+    if (Item.classList.contains('completed')) {
+      alert("You cannot edit a completed task!");
+      return;
+    }
+
+    if (taskToEdit && taskToEdit.Item) {
+      taskToEdit.Item.classList.remove('editing');
+    }
+
+    taskToEdit = { Item, taskSpan };
     Item.classList.add('editing');
     input.value = taskSpan.textContent;
     action.textContent = 'Save Edit';
   };
 
-  const deleteBtn = document.createElement('button');
-  deleteBtn.textContent = 'Delete';
-  deleteBtn.className = 'delete-btn';
   deleteBtn.onclick = () => {
     if (confirm('Delete this task?')) {
       Item.remove();
@@ -85,6 +100,9 @@ function createTaskElement({ text, completed }) {
 
   div.append(editBtn, deleteBtn);
   Item.append(taskSpan, div);
+
+  editBtn.disabled = completed;
+
   return Item;
 }
 
