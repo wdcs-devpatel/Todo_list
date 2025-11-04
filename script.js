@@ -20,12 +20,10 @@ function init() {
   loadTasks();
   updateProgress();
 }
-
 function logout() {
   localStorage.removeItem('currentUser');
   window.location.href = 'index.html';
 }
-
 function handleAction() {
   const taskText = input.value.trim();
 
@@ -36,7 +34,6 @@ if(taskText.length>30){
     alert("Task cannot be empty!");
     return;
   }
-
   if (taskToEdit) {
     taskToEdit.querySelector('.task-text').textContent = taskText;
     taskToEdit.classList.remove('editing');
@@ -61,8 +58,6 @@ function createTaskElement({ text, completed }) {
     Item.classList.add('completed');
     editBtn.style.display = 'none'; 
   }
-
-  
   taskSpan.onclick = () => {
     Item.classList.toggle('completed');
 
@@ -71,12 +66,10 @@ function createTaskElement({ text, completed }) {
     } else {
       editBtn.style.display = 'inline-block';
     }
-
     saveTasks();
   };
 
   editBtn.onclick = () => {
-  
     if (taskToEdit) taskToEdit.classList.remove('editing');
     taskToEdit = Item;
     Item.classList.add('editing');
@@ -90,7 +83,6 @@ function createTaskElement({ text, completed }) {
       saveTasks();
     }
   };
-
   return Item;
 }
 
